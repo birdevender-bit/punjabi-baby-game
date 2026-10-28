@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tap the Punjabi Baby!</title>
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+  color: #40204e;
+  background: linear-gradient(135deg,#ffe1ef,#d8f6ff);
+  min-height: 100vh;
+}
+main { padding: 28px 16px; }
+h1 { font-size: 30px; }
+.card {
+  max-width: 360px;
+  margin: 20px auto;
+  padding: 24px;
+  background: white;
+  border-radius: 26px;
+  box-shadow: 0 8px 25px #0001;
+}
+#baby {
+  border: 0;
+  background: #fff1a8;
+  border-radius: 50%;
+  width: 190px;
+  height: 190px;
+  font-size: 105px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#baby:active { transform: scale(.9); }
+button {
+  padding: 13px 22px;
+  margin: 8px;
+  border: 0;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: bold;
+  background: #7928ca;
+  color: white;
+  cursor: pointer;
+}
+.stats { font-size: 20px; font-weight: bold; }
+#message { min-height: 28px; font-weight: bold; }
+</style>
+</head>
+<body>
+<main>
+  <h1>👶 Tap the Punjabi Baby!</h1>
+  <p>30 seconds. How many taps can you get?</p>
+
+  <div class="card">
+    <div class="stats">
+      Score: <span id="score">0</span>
+    </div>
+    <p>⏱️ Time: <span id="time">30</span>s</p>
+
+    <button id="baby" aria-label="Tap the baby">👶</button>
+
+    <p id="message">Oye hoye! Ready aa? 😄</p>
+    <button id="start">Start Game</button>
+    <p>🏆 Best: <span id="best">0</span></p>
+    <button id="share">Share Score</button>
+  </div>
+  <p>Made with ❤️ for Punjabi comedy fans</p>
+</main>
+
+<script>
+let score = 0;
+let time = 30;
+let playing = false;
+let timer;
+let best = 0;
+
+try {
+  best = Number(localStorage.getItem("punjabiBest")) || 0;
+} catch (e) {}
+
+document.getElementById("best").textContent = best;
+
+const messages = [
+  "Oye hoye! 🔥",
+  "Chakk de phatte! 😂",
+  "Hor tap kar! 👆",
+  "Balle balle! 🎉",
+  "Kya gall aa! 😎"
+];
+
+const scoreEl = document.getElementById("score");
+const timeEl = document.getElementById("time");
+const messageEl = document.getElementById("message");
+const baby = document.getElementById("baby");
+const start = document.getElementById("start");
+
+start.addEventListener("click", () => {
+  clearInterval(timer);
+  score = 0;
+  time = 30;
+  playing = true;
+  scoreEl.textContent = score;
+  timeEl.textContent = time;
+  messageEl.textContent = "Shuru karo! 🚀";
+  start.disabled = true;
+  start.textContent = "Playing...";
+  baby.textContent = "👶";
+
+  timer = setInterval(() => {
+    time--;
+    timeEl.textContent = time;
+
+    if (time <= 0) {
+      clearInterval(timer);
+      playing = false;
+      start.disabled = false;
+      start.textContent = "Play Again";
+      baby.textContent = "🥳";
+      messageEl.textContent =
+        "Game over! Your score: " + score + " — Balle balle!";
+    }
+  }, 1000);
+});
+
+baby.addEventListener("click", () => {
+  if (!playing) return;
+  score++;
+  scoreEl.textContent = score;
+  baby.textContent = score % 10 === 0 ? "🤩" : "👶";
+  messageEl.textContent =
+    messages[Math.floor(Math.random() * messages.length)];
+
+  if (score > best) {
+    best = score;
+    document.getElementById("best").textContent = best;
+    try {
+      localStorage.setItem("punjabiBest", best);
+    } catch (e) {}
+  }
+});
+
+document.getElementById("share").addEventListener("click", async () => {
+  const text = "I scored " + score +
+    " in Tap the Punjabi Baby! Can you beat me?";
+
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: "Punjabi Baby Game", text });
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(text);
+      messageEl.textContent = "Score copied! Share it with friends.";
+    } else {
+      messageEl.textContent = text;
+    }
+  } catch (e) {
+    messageEl.textContent = "Your score: " + score;
+  }
+});
+</script>
+</body>
+</html>
